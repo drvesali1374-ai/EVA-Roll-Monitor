@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// رول‌های نرمال‌شده فایل «رول های موجود»
+// دسته‌بندی (خام/EVA/برش‌خورده/خطا) به‌صورت زنده با تنظیمات فعلی محاسبه می‌شود
+model Roll {
+  id             Int      @id @default(autoincrement())
+  rollNumber     String // شماره رول — همیشه رشته
+  filmType       String // نوع فیلم
+  width          Float? // عرض
+  initialWidth   Float? // عرض رول اولیه
+  length         Float? // متراژ
+  thickness      Float? // ضخامت (میکرون)
+  netWeight      Float? // وزن خالص (کیلوگرم)
+  grade          String? // گرید
+  palletNumber   String? // شماره پالت
+  setupNumber    Int? // شماره ستاپ
+  productionDate String? // تاریخ تولید
+  position       String? // موقعیت فعلی
+  externalId     String? // شناسه رول
+  typeOverride   String? // وضعیت دستی رول (raw|eva|cut) — بر تشخیص خودکار اولویت دارد (بند ۴ نسخهٔ ۱٫۲)
+  manualEdit     String? // JSON فیلدهای ویرایش‌شدهٔ دستی — در بازسازی نگاشت حفظ می‌شود (بند ۴ نسخهٔ ۱٫۳)
+  rawJson        String // سطر اصلی اکسل (JSON) — برای بازسازی با نگاشت جدید
+  batchId        Int // شناسه Import
+  rowIndex       Int // شماره سطر در فایل
+
+  @@index([filmType])
+  @@index([setupNumber])
+  @@index([batchId])
+}
+
+// اطلاعات هر بار Import فایل «رول های موجود»
+model ImportBatch {
+  id         Int      @id @default(autoincrement())
+  fileName   String
+  sheetName  String?
+  importedAt DateTime @default(now())
+  totalRows  Int
+  headers    String // JSON آرایهٔ نام ستون‌های فایل
+  counts     String // JSON شمارنده‌های دسته‌بندی
+}
+
+// تنظیمات برنامه (کلید/مقدار JSON)
+model Setting {
+  key   String @id
+  value String
+}
